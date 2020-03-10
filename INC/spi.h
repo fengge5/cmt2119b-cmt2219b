@@ -4,7 +4,7 @@
 	void Delay_us(unsigned long i);
 	void Delay_ms(unsigned long i);
 	
-  #define SPI3_SPEED 20
+  #define SPI3_SPEED 1
 
    
   #ifndef	byte

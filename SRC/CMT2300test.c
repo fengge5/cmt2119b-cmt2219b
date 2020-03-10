@@ -2,8 +2,9 @@
 #include "type.h"
 #include "CMT2300drive.c"
 #include "stdio.h"
+#include "TxConfig.h"
 
-static unsigned char statetx = true;  //  falseÎªRX  trueÎªTX
+static unsigned char statetx = false;  //  falseä¸ºRX  trueä¸ºTX
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -19,165 +20,162 @@ void loop_Rx(void);
 
 #define LEN 21
 
-unsigned char str[LEN] = {'H','o','p','e','R','F',' ','R','F','M',' ','C','O','B','R','F','M','3','0','0','A'};
+unsigned char str[LEN] = {'f','e','n','g','R','F',' ','R','F','M',' ','C','O','B','R','F','M','3','0','0','A'};
 unsigned char getstr[LEN+1];
 	
-cmt2300aEasy radio;
-
-/* Private functions ---------------------------------------------------------*/
-/* Public functions ----------------------------------------------------------*/
-/**
-  * @brief  Main program.
-  * @param  None
-  * @retval None
-  */
-
-
-/*****´Ë´¦Í¨¹ýRFPDKÈí¼þµ¼³ö£¬È»ºó¸ü¸ÄÃ¿¸öÊý×éÖÐµÄ²ÎÊý *****/
-/************************************************************
-Æµµã:  433.92Mhz
-ËÙÂÊ:  2.4Kpbs
-ÆµÆ«:  +/-10Khz
-´ø¿í:  +/-100khz
-Êý¾Ý°ü¸ñÊ½:
-		0xAAAAAAAAAAAAAAAA + 0x2DD4 +0x15 +"HopeRF RFM COBRFM300A" 
-
-·¢Éä¹¦ÂÊ: 13dBm
-**************************************************************/
-code unsigned short int CMTBank[12] = {
-					0x0000,
-					0x0166,
-					0x02EC,
-					0x031C,
-					0x04F0,
-					0x0580,
-					0x0614,
-					0x0708,
-					0x0891,
-					0x0902,
-					0x0A02,
-					0x0BD0
-				   };
-				   
-code unsigned short int SystemBank[12] = {
-					0x0CAE,
-					0x0DE0,
-					0x0E35,
-					0x0F00,
-					0x1000,
-					0x11F4,
-					0x1210,
-					0x13E2,
-					0x1442,
-					0x1520,
-					0x1600,
-					0x1781				  
-					};
-
-code unsigned short int FrequencyBank[8] = {
-					0x1842,
-					0x1971,
-					0x1ACE,
-					0x1B1C,
-					0x1C42,
-					0x1D5B,
-					0x1E1C,
-					0x1F1C					
-						 };
-						 
-code unsigned short int DataRateBank[24] = {
-					0x2032,
-					0x2118,
-					0x2200,
-					0x2399,
-					0x24E0,
-					0x2569,
-					0x2619,
-					0x2705,
-					0x289F,
-					0x2939,
-					0x2A29,
-					0x2B29,
-					0x2CC0,
-					0x2D51,
-					0x2E2A,
-					0x2F53,
-					0x3000,
-					0x3100,
-					0x32B4,
-					0x3300,
-					0x3400,
-					0x3501,
-					0x3600,
-					0x3700
-						};	   
-
-code unsigned short int BasebandBank[29] = {
-					0x3812,
-					0x3908,
-					0x3A00,
-					0x3BAA,
-					0x3C02,
-					0x3D00,
-					0x3E00,
-					0x3F00,
-					0x4000,
-					0x4100,
-					0x4200,
-					0x43D4,
-					0x442D,
-					0x4501,
-					0x461F,
-					0x4700,
-					0x4800,
-					0x4900,
-					0x4A00,
-					0x4B00,
-					0x4C00,
-					0x4D00,
-					0x4E00,
-					0x4F60,
-					0x50FF,
-					0x5102,
-					0x5200,
-					0x531F,
-					0x5410	
-						};	
-
-code unsigned short int TXBank[11] = {
-					0x5550,
-					0x564D,
-					0x5706,
-					0x5800,
-					0x5942,
-					0x5AB0,
-					0x5B00,
-					0x5C37,
-					0x5D0A,
-					0x5E3F,
-					0x5F7F															
-					    };			
+cmt2300aEasy radio;	
 		
 
-void UartInit(void)		//115200bps@11.0592MHz
-{
-	SCON = 0x50;		//8Î»Êý¾Ý,¿É±ä²¨ÌØÂÊ
-	AUXR |= 0x01;		//´®¿Ú1Ñ¡Ôñ¶¨Ê±Æ÷2Îª²¨ÌØÂÊ·¢ÉúÆ÷
-	AUXR |= 0x04;		//¶¨Ê±Æ÷2Ê±ÖÓÎªFosc,¼´1T
-	T2L = 0xE8;		//Éè¶¨¶¨Ê±³õÖµ
-	T2H = 0xFF;		//Éè¶¨¶¨Ê±³õÖµ
-	AUXR |= 0x10;		//Æô¶¯¶¨Ê±Æ÷2
+
+
+//-----------------------------------------
+//define baudrate const
+//BAUD = 65536 - FOSC/3/BAUDRATE/M (1T:M=1; 12T:M=12)
+//NOTE: (FOSC/3/BAUDRATE) must be greater then 98, (RECOMMEND GREATER THEN 110)
+
+//#define BAUD  0xF400                  // 1200bps @ 11.0592MHz
+//#define BAUD  0xFA00                  // 2400bps @ 11.0592MHz
+//#define BAUD  0xFD00                  // 4800bps @ 11.0592MHz
+#define BAUD  0xFE80                  // 9600bps @ 11.0592MHz
+//#define BAUD  0xFF40                  //19200bps @ 11.0592MHz
+//#define BAUD  0xFFA0                    //38400bps @ 11.0592MHz
+
+//#define BAUD  0xEC00                  // 1200bps @ 18.432MHz
+//#define BAUD  0xF600                  // 2400bps @ 18.432MHz
+//#define BAUD  0xFB00                  // 4800bps @ 18.432MHz
+//#define BAUD  0xFD80                  // 9600bps @ 18.432MHz
+//#define BAUD  0xFEC0                  //19200bps @ 18.432MHz
+//#define BAUD    0xFF60                //38400bps @ 18.432MHz
+
+//#define BAUD  0xE800                  // 1200bps @ 22.1184MHz
+//#define BAUD  0xF400                  // 2400bps @ 22.1184MHz
+//#define BAUD  0xFA00                  // 4800bps @ 22.1184MHz
+//#define BAUD  0xFD00                  // 9600bps @ 22.1184MHz
+//#define BAUD  0xFE80                  //19200bps @ 22.1184MHz
+//#define BAUD  0xFF40                  //38400bps @ 22.1184MHz
+//#define BAUD  0xFF80                  //57600bps @ 22.1184MHz
+
+sbit RXB = P3^0;                        //define UART TX/RX port
+sbit TXB = P3^1;
+
+typedef bit BOOL;
+typedef unsigned char BYTE;
+typedef unsigned int WORD;
+
+BYTE TBUF,RBUF;
+BYTE TDAT,RDAT;
+BYTE TCNT,RCNT;
+BYTE TBIT,RBIT;
+BOOL TING,RING;
+BOOL TEND,REND;
+
+void UART_INIT();
+
+//åŠ å…¥ä»¥ä¸‹ä»£ç ,æ”¯æŒprintfå‡½æ•°,å¯ä»¥åœ¨å…¶ä»–åœ°æ–¹ä»»æ„ä½¿ç”¨printf();Â  Â  Â 
+char putchar (char c)   
+{        
+    while(!TEND);//wait send end
+		TEND = 0;
+		TBUF = c;
+		TING = 1;      
+    return 0;
 }
+
+//-----------------------------------------
+//Timer interrupt routine for UART
+
+void tm0() interrupt 1 using 1
+{
+    if (RING)
+    {
+        if (--RCNT == 0)
+        {
+            RCNT = 3;                   //reset send baudrate counter
+            if (--RBIT == 0)
+            {
+                RBUF = RDAT;            //save the data to RBUF
+                RING = 0;               //stop receive
+                REND = 1;               //set receive completed flag
+            }
+            else
+            {
+                RDAT >>= 1;
+                if (RXB) RDAT |= 0x80;  //shift RX data to RX buffer
+            }
+        }
+    }
+    else if (!RXB)
+    {
+        RING = 1;                       //set start receive flag
+        RCNT = 4;                       //initial receive baudrate counter
+        RBIT = 9;                       //initial receive bit number (8 data bits + 1 stop bit)
+    }
+
+    if (--TCNT == 0)
+    {
+        TCNT = 3;                       //reset send baudrate counter
+        if (TING)                       //judge whether sending
+        {
+            if (TBIT == 0)
+            {
+                TXB = 0;                //send start bit
+                TDAT = TBUF;            //load data from TBUF to TDAT
+                TBIT = 9;               //initial send bit number (8 data bits + 1 stop bit)
+            }
+            else
+            {
+                TDAT >>= 1;             //shift data to CY
+                if (--TBIT == 0)
+                {
+                    TXB = 1;
+                    TING = 0;           //stop send
+                    TEND = 1;           //set send completed flag
+                }
+                else
+                {
+                    TXB = CY;           //write CY to TX port
+                }
+            }
+        }
+    }
+}
+
+//-----------------------------------------
+//initial UART module variable
+
+void UART_INIT()
+{
+    TING = 0;
+    RING = 0;
+    TEND = 1;
+    REND = 0;
+    TCNT = 0;
+    RCNT = 0;
+	
+		TMOD = 0x00;                        //timer0 in 16-bit auto reload mode
+    AUXR = 0x80;                        //timer0 working at 1T mode
+    TL0 = BAUD;
+    TH0 = BAUD>>8;                      //initial timer0 and set reload value
+    TR0 = 1;                            //tiemr0 start running
+    ET0 = 1;                            //enable timer0 interrupt
+    PT0 = 1;                            //improve timer0 interrupt priority
+    EA = 1;  
+}	
 
 
 void main(void)
 {
-
-	UartInit();
-	TI=1;
+	P3M1&=~(1<1);
+	P3M0|=(1<<1);
+	P3M1&=~(1<5);
+	P3M0|=(1<<5);
+	UART_INIT();//UartInit();
+	printf("start0!\r\n");
   CMT2300_Init();
+	printf("1!\r\n");
   if(false == statetx )
 	{
+		printf("2!\r\n");
 		setup_Rx();
 		while(1)
 		{
@@ -206,18 +204,21 @@ void main(void)
 
 void CMT2300_Init()
 {
-	/**********»ù´¡ÉèÖÃ³õÊ¼»¯Ò»´Î¼´¿É*******/
+	/**********åŸºç¡€è®¾ç½®åˆå§‹åŒ–ä¸€æ¬¡å³å¯*******/
+	printf("4!\r\n");
 	radio.FixedPktLength    = false;				
 	radio.PayloadLength     = LEN;	
 	cmt2300aEasy_vInit();
+	printf("5!\r\n");
 	cmt2300aEasy_vCfgBank(CMTBank, 12);
 	cmt2300aEasy_vCfgBank(SystemBank, 12);
 	cmt2300aEasy_vCfgBank(FrequencyBank, 8);
 	cmt2300aEasy_vCfgBank(DataRateBank, 24);
 	cmt2300aEasy_vCfgBank(BasebandBank, 29);
 	cmt2300aEasy_vCfgBank(TXBank, 11);
+	printf("6!\r\n");
 	cmt2300aEasy_vEnablePLLcheck();
-	cmt2300aEasy_bGoSleep();  				//ÈÃÅäÖÃÉúÐ§
+	cmt2300aEasy_bGoSleep();  				//è®©é…ç½®ç”Ÿæ•ˆ
 	/**************************************/
 
 }
@@ -225,56 +226,67 @@ void CMT2300_Init()
 void setup_Tx(void)
 {
 
-	cmt2300aEasy_bGoStandby();   //½øÈëÅäÖÃÄ£Ê½
+	if(cmt2300aEasy_bGoStandby())//;   //è¿›å…¥é…ç½®æ¨¡å¼
+	{
+		printf("bGoStandby ok!\r\n");
+	}
+	cmt2300aEasy_vEnableAntSwitch(0);  //è®¾ç½®å¤©çº¿åˆ‡æ¢_IOå£åˆ‡æ¢
+	cmt2300aEasy_vGpioFuncCfg(GPIO1_INT2+GPIO2_INT2+GPIO3_INT2); //IOå£çš„æ˜ å°„
+	cmt2300aEasy_vIntSrcCfg(INT_FIFO_NMTY_TX, INT_TX_DONE);    //IOå£ä¸­æ–­çš„æ˜ å°„
+	cmt2300aEasy_vIntSrcEnable(TX_DONE_EN);           //ä¸­æ–­ä½¿èƒ½        
 	
-	cmt2300aEasy_vEnableAntSwitch(0);  //ÉèÖÃÌìÏßÇÐ»»_IO¿ÚÇÐ»»
-	cmt2300aEasy_vGpioFuncCfg(GPIO1_INT1+GPIO2_INT2+GPIO3_INT2); //IO¿ÚµÄÓ³Éä
-	cmt2300aEasy_vIntSrcCfg(INT_FIFO_NMTY_TX, INT_TX_DONE);    //IO¿ÚÖÐ¶ÏµÄÓ³Éä
-	cmt2300aEasy_vIntSrcEnable(TX_DONE_EN);           //ÖÐ¶ÏÊ¹ÄÜ        
-	
-	cmt2300aEasy_vClearFIFO();  //Çå³ýFIFO
-	cmt2300aEasy_bGoSleep();    //½øÈëË¯Ãß£¬ÈÃÅäÖÃÉúÐ§
-
+	cmt2300aEasy_vClearFIFO();  //æ¸…é™¤FIFO
+	if(cmt2300aEasy_bGoSleep())//;    //è¿›å…¥ç¡çœ ï¼Œè®©é…ç½®ç”Ÿæ•ˆ
+	{
+		printf("bGoSleep ok!\r\n");;
+	}
  
 }
 
 void setup_Rx(void)
 {
-
-	cmt2300aEasy_bGoStandby();   //½øÈëÅäÖÃÄ£Ê½
-	cmt2300aEasy_vEnableAntSwitch(0); //Îª 1 Ê± GPIO1 ºÍ GPIO2 ²»¿ÉÓÃ
-	cmt2300aEasy_vGpioFuncCfg(GPIO1_INT1+GPIO2_Dout+GPIO3_INT2);  //IO¿ÚµÄ¹¦ÄÜÓ³Éä
-
-	//cmt2300aEasy_vIntSrcCfg(INT_RSSI_VALID, INT_CRC_PASS);   //GPO3Ó³Éä³ÉCRC_passÖÐ¶Ï£¬´Ë´¦Èç¹ûÒªÓÃ¸ÃÖÐ¶Ï£¬RFPDKÐèÒªÅäÖÃCRC
-	cmt2300aEasy_vIntSrcCfg(INT_FIFO_Wunsigned_char_RX, INT_PKT_DONE);  //GPO3Ó³Éä³ÉPKT_DONEÖÐ¶Ï //IO¿ÚÖÐ¶ÏµÄÓ³Éä
-	cmt2300aEasy_vIntSrcEnable(PKT_DONE_EN + CRC_PASS_EN);          //ÖÐ¶ÏÊ¹ÄÜ 
-	
+printf("7!\r\n");
+	cmt2300aEasy_bGoStandby();   //è¿›å…¥é…ç½®æ¨¡å¼
+	cmt2300aEasy_vEnableAntSwitch(0); //ä¸º 1 æ—¶ GPIO1 å’Œ GPIO2 ä¸å¯ç”¨
+	cmt2300aEasy_vGpioFuncCfg(GPIO1_INT2+GPIO2_Dout+GPIO3_INT2);  //IOå£çš„åŠŸèƒ½æ˜ å°„
+printf("8!\r\n");
+	//cmt2300aEasy_vIntSrcCfg(INT_RSSI_VALID, INT_CRC_PASS);   //GPO3æ˜ å°„æˆCRC_passä¸­æ–­ï¼Œæ­¤å¤„å¦‚æžœè¦ç”¨è¯¥ä¸­æ–­ï¼ŒRFPDKéœ€è¦é…ç½®CRC
+	cmt2300aEasy_vIntSrcCfg(INT_FIFO_Wunsigned_char_RX, INT_PKT_DONE);  //GPO3æ˜ å°„æˆPKT_DONEä¸­æ–­ //IOå£ä¸­æ–­çš„æ˜ å°„
+	cmt2300aEasy_vIntSrcEnable(PKT_DONE_EN + CRC_PASS_EN);          //ä¸­æ–­ä½¿èƒ½ 
+printf("9!\r\n");	
 	cmt2300aEasy_vClearFIFO();
-	cmt2300aEasy_bGoSleep();           //ÈÃÅäÖÃÉúÐ§
+	printf("10!\r\n");
+	cmt2300aEasy_bGoSleep();           //è®©é…ç½®ç”Ÿæ•ˆ
+	printf("11!\r\n");
 	cmt2300aEasy_bGoRx();              //for Rx
-
+printf("12!\r\n");
 }
 
 
 void loop_Tx()
 {
+	printf("send!\r\n");
 	cmt2300aEasy_bSendMessage(str, LEN);
-	while(GPO3_L());   // ÅÐ¶ÏGPIOÖÐ¶Ï ÎªµÍµÈ Îª¸ßÔËÐÐÏÂÃæ´úÂë
-	cmt2300aEasy_bIntSrcFlagClr();
+	while(GPO3_L());   // åˆ¤æ–­GPIOä¸­æ–­ ä¸ºä½Žç­‰ ä¸ºé«˜è¿è¡Œä¸‹é¢ä»£ç 
+	//cmt2300aEasy_bIntSrcFlagClr();
 	cmt2300aEasy_vClearFIFO(); 
-	Delay_ms(200);
+	Delay_ms(2);
 }
 
 void loop_Rx()
 {
 	unsigned char tmp;
-	if(GPO3_H())
+	if(GPO1_H())
 	{
 		cmt2300aEasy_bGoStandby();
-		tmp = cmt2300aEasy_bGetMessage(getstr);  //·ÂÕæµ½´ËÄÜ¿´µ½getstrÊÕµ½µÄÊý¾Ý°ü
-		printf("%s",getstr);
+		tmp = cmt2300aEasy_bGetMessage(getstr);  //ä»¿çœŸåˆ°æ­¤èƒ½çœ‹åˆ°getstræ”¶åˆ°çš„æ•°æ®åŒ…
+		printf("recv=%s\r\n",getstr);
 		cmt2300aEasy_bIntSrcFlagClr();
 		cmt2300aEasy_vClearFIFO(); 
 		cmt2300aEasy_bGoRx();
-	}	
+	}else
+	{
+		printf("nothing!\r\n");
+		Delay_ms(200);
+	}
 }

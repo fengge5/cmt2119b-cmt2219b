@@ -1,6 +1,7 @@
 #include <CMT2300drive.h>
 #include "type.h"
 #include "spi.c"
+#include "stdio.h"
 
 cmt2300aEasy cmt2300;
 
@@ -358,6 +359,7 @@ void cmt2300aEasy_vInit(void)
 tmp1 = cmt2300aEasy_bGoStandby();
 if(tmp1 == false)
 {
+	printf("tmp1=%d while(1)\n",(u16)tmp1);
 	while(1);
 }
  //	
@@ -471,11 +473,11 @@ unsigned char cmt2300aEasy_bGetMessageByFlag(unsigned char msg[])
 unsigned char cmt2300aEasy_bSendMessage(unsigned char msg[], unsigned char length)
 {
  //mode1
- //vSetTxPayloadLength(length);
- //bGoStandby();
- //vEnableWrFifo();	
- //Spi3.vSpi3BurstWriteFIFO(msg, length);
- //bGoTx();
+ /*cmt2300aEasy_vSetTxPayloadLength(length);
+ cmt2300aEasy_bGoStandby();
+ cmt2300aEasy_vEnableWrFifo();	
+ spi3Class_vSpi3BurstWriteFIFO(msg, length);
+ cmt2300aEasy_bGoTx();*/
  
  //mode2
  cmt2300aEasy_bIntSrcFlagClr();  //«Â÷–∂œ
