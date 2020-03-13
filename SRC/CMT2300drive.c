@@ -3,7 +3,7 @@
 #include "spi.c"
 #include "stdio.h"
 
-cmt2300aEasy cmt2300;
+extern cmt2300aEasy radio;
 
 unsigned char cmt2300aEasy_bGoTx(void)
 {
@@ -51,7 +51,7 @@ unsigned char cmt2300aEasy_vReadIngFlag2(void)
 unsigned char cmt2300aEasy_bGoRx(void)
 {
  unsigned char tmp, i;
- cmt2300.RssiTrig = false;
+ radio.RssiTrig = false;
 
  INIT_RX:
  spi3Class_vSpi3Write(((unsigned short int)CMT23_MODE_CTL<<8)+MODE_GO_RX);		
@@ -100,7 +100,7 @@ unsigned char cmt2300aEasy_bGoStandby(void)
 {
  unsigned char tmp, i;	
  
- cmt2300.RssiTrig = false;
+ radio.RssiTrig = false;
  spi3Class_vSpi3Write(((unsigned short int)CMT23_MODE_CTL<<8)+MODE_GO_STBY);	
  for(i=0; i<50; i++)
  	{
@@ -396,10 +396,10 @@ unsigned char cmt2300aEasy_bGetMessage(unsigned char msg[])
  unsigned char i;	
  
  cmt2300aEasy_vEnableRdFifo();	
- if(cmt2300.FixedPktLength)
+ if(radio.FixedPktLength)
  	{
-  	spi3Class_vSpi3BurstReadFIFO(msg, cmt2300.PayloadLength);
-	i = cmt2300.PayloadLength;
+  	spi3Class_vSpi3BurstReadFIFO(msg, radio.PayloadLength);
+	i = radio.PayloadLength;
 	}
  else
  	{
@@ -415,10 +415,10 @@ unsigned char cmt2300aEasy_bGetMessageByFlag(unsigned char msg[])
  unsigned char tmp1;
  unsigned char rev = 0;
  tmp = spi3Class_bSpi3Read(CMT23_INT_FLG);
- if((tmp&SYNC_PASS_FLAG)&&(!cmt2300.RssiTrig))
+ if((tmp&SYNC_PASS_FLAG)&&(!radio.RssiTrig))
  	{
- 	cmt2300.PktRssi = cmt2300aEasy_bReadRssi(false);
- 	cmt2300.RssiTrig = true;
+ 	radio.PktRssi = cmt2300aEasy_bReadRssi(false);
+ 	radio.RssiTrig = true;
  	}
  
  tmp1 = spi3Class_bSpi3Read(CMT23_CRC_CTL);
@@ -427,34 +427,34 @@ unsigned char cmt2300aEasy_bGetMessageByFlag(unsigned char msg[])
  	{
  	if(tmp&CRC_PASS_FLAG)
  		{
- 		if(cmt2300.FixedPktLength)
+ 		if(radio.FixedPktLength)
  			{
-  			spi3Class_vSpi3BurstReadFIFO(msg, cmt2300.PayloadLength);
-			rev = cmt2300.PayloadLength;
+  			spi3Class_vSpi3BurstReadFIFO(msg, radio.PayloadLength);
+			rev = radio.PayloadLength;
 			}
  		else
  			{	
 			rev = spi3Class_bSpi3ReadFIFO();	
  			spi3Class_vSpi3BurstReadFIFO(msg, rev);
  			}
- 		cmt2300.RssiTrig = false;
+ 		radio.RssiTrig = false;
  		}
  	}
  else
  	{
 	if(tmp&RX_DONE_FLAG) 		
 		{
- 		if(cmt2300.FixedPktLength)
+ 		if(radio.FixedPktLength)
  			{
-  			spi3Class_vSpi3BurstReadFIFO(msg, cmt2300.PayloadLength);
-			rev = cmt2300.PayloadLength;
+  			spi3Class_vSpi3BurstReadFIFO(msg, radio.PayloadLength);
+			rev = radio.PayloadLength;
 			}
  		else
  			{	
 			rev = spi3Class_bSpi3ReadFIFO();	
  			spi3Class_vSpi3BurstReadFIFO(msg, rev);
  			}	
- 		cmt2300.RssiTrig = false;		
+ 		radio.RssiTrig = false;		
 		}
  	}
  
@@ -498,7 +498,7 @@ void cmt2300aEasy_vSetTxPayloadLength(unsigned short int length)
  
  if(length!=0)
  	{
- 	if(cmt2300.FixedPktLength)
+ 	if(radio.FixedPktLength)
 		len = length-1;
  	else
 		len = length;

@@ -374,14 +374,19 @@
           <GroupName>SRC</GroupName>
           <Files>
             <File>
-              <FileName>CMT2300test.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\SRC\CMT2300test.c</FilePath>
-            </File>
-            <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\SRC\delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SRC\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>simulateUart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SRC\simulateUart.c</FilePath>
             </File>
           </Files>
         </Group>

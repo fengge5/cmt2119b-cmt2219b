@@ -43,14 +43,14 @@ static void vSpi3WriteByte(byte dat)
  	for(bitcnt=8; bitcnt!=0; bitcnt--)
  		{
 		ClrSDCK();	
-		Delay_us(SPI3_SPEED);
+		//Delay_us(SPI3_SPEED);
  		if(dat&0x80)
  			SetSDIO();
  		else
  			ClrSDIO();
 		SetSDCK();
  		dat <<= 1; 		
- 		Delay_us(SPI3_SPEED);
+ 		//Delay_us(SPI3_SPEED);
  		}
  	ClrSDCK();		
  	SetSDIO();
@@ -74,9 +74,9 @@ static byte bSpi3ReadByte(void)
  		{
  		ClrSDCK();
  		RdPara <<= 1;
- 		Delay_us(SPI3_SPEED);
+ 		//Delay_us(SPI3_SPEED);
  		SetSDCK();
- 		Delay_us(SPI3_SPEED);
+ 		//Delay_us(SPI3_SPEED);
  		if(SDIO_H())
  			RdPara |= 0x01;
  		else

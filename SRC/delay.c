@@ -6,9 +6,9 @@
 
 void Delay1us()		//@11.0592MHz
 {
-	_nop_();
-	_nop_();
-	_nop_();
+	//_nop_();
+	//_nop_();
+	//_nop_();
 }
 
 void Delay1ms()		//@11.0592MHz
