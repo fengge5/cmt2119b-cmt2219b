@@ -11,7 +11,7 @@
 #define GPO3In()    //GPIO_Init(GPIO_PORT_C, (GPIO_Pin_TypeDef)GPIO1, GPIO_MODE_IN_FL_NO_IT)
 #define GPO3_H() 	P30//(GPIO_ReadInputPin(GPIO_PORT_C,GPIO1) ? 1 : 0)
 #define GPO3_L()  (!P30)  //(GPIO_ReadInputPin(GPIO_PORT_C,GPIO1) ? 0 : 1 )
-
+//
 #define CMT23_DUTY_CTL			0x0D
 		#define	DUTY_MASK			0xE0
 		
