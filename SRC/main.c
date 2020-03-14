@@ -151,7 +151,7 @@ void loop_Tx()
 	while(GPO3_L());   // 判断GPIO中断 为低等 为高运行下面代码
 	cmt2300aEasy_bIntSrcFlagClr();
 	cmt2300aEasy_vClearFIFO(); 
-	Delay_ms(200);
+	Delay_ms(20);
 }
 
 unsigned char tmp;
