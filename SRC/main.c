@@ -42,7 +42,7 @@ void main(void)
   
   if(false == statetx )
 	{
-		CMT2119B_TxInit();
+		CMT2219B_RxInit();
 		setup_Rx();
 		while(1)
 		{
@@ -51,7 +51,7 @@ void main(void)
 	}
   else
 	{	
-		CMT2219B_RxInit();
+		CMT2119B_TxInit();
 		setup_Tx(); 
 		while (1)
 		{
